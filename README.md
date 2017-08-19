@@ -7,6 +7,7 @@ Create an interactive online file editor using React JS as core framework and we
 - User has option to create new files from frontend. Backend should create a DB/Local storage entry for this file (Maintain only meta info in DB, its upto your design).
 - When ever user makes an update to file or creates a file, all the users connected or new user user connected should receive the update.
 - Basically make it real time update by braodcasting the events.
+- Make sure frontend looks appealing just like available online editors.
 
 ## Technology to use.
 - Websocket should be the communication protocol.
