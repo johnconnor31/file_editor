@@ -5,11 +5,11 @@ body {
 }
 header{
   display: block;
-  height: 5vh;
-  overflow: auto;
+  height: 6vh;
+  overflow: hidden;
   background-color: pink;
   color:red;
-  fond-size:30px;
+  font-size:30px;
 }
 textarea{
   height: 95vh;
