@@ -1,15 +1,14 @@
 import React, { Component } from "react";
 import openSocket from "socket.io-client";
-// import ReactDOM from 'react-dom';
-// import { Tabs, Tab } from 'material-ui/Tabs';
+
 import RaisedButton from "material-ui/RaisedButton";
 import TextField from "material-ui/TextField";
-// import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import "./App.css";
 import TabsEditor from "./TabsEditor";
 import MenuItems from "./menuItems";
 import { Tabs, Tab } from "material-ui/Tabs";
+
 var io = openSocket("http://localhost:8000");
 class App extends Component {
   constructor() {
@@ -42,12 +41,28 @@ class App extends Component {
       var errorMessage =
         count == 0
           ? this.state.errorMessage
-          : count + " files found.Click on NewFile to create new";
+          : count +
+            " files found.Click on NewFile to create new.Click on FilList to easy pick a file";
       context.setState({
         tabList: filesObject.filesObject,
         currentFile: filesObject.filesObject[0].fileName || "untitled",
         errorMessage: errorMessage
       });
+    });
+    io.on("errormessage", function(err) {
+      console.log("error errorMessage", err);
+      var fl;
+      if (err.code === 1) {
+        fl = context.state.tabList;
+        console.log("duplicate file");
+        fl[0].fileName = "untitled";
+        context.setState({
+          tabList: fl,
+          currentFile: "untitled",
+          errorMessage: err.msg,
+          isNewFile: true
+        });
+      } else context.setState({ errorMessage: err.msg });
     });
     io.on("newfile", function(fileObj) {
       console.log("received new file" + fileObj);
@@ -93,32 +108,45 @@ class App extends Component {
   }
   newFile() {
     var fl = this.state.tabList;
-    console.log(fl);
-    fl.unshift({
-      fileName: "untitled",
-      text: ""
-    });
-    console.log(fl);
-    this.setState({
-      tabList: fl,
-      currentFile: "untitled",
-      errorMessage: "Press Ctrl+s to save the file"
-    });
+    // console.log(fl);
+    if (fl.length === 0 || (fl.length !== 0 && fl[0].fileName !== "untitled")) {
+      fl.unshift({
+        fileName: "untitled",
+        text: ""
+      });
+      console.log(fl);
+      this.setState({
+        tabList: fl,
+        currentFile: "untitled",
+        errorMessage: "Press Ctrl+s to save the file"
+      });
+    } else
+      this.setState({
+        errorMessage: "Please save the unnamed file first to Continue."
+      });
   }
   saveNewFile(e) {
-    var fl = this.state.tabList;
-    fl[0].fileName = this.refs.fileName.getValue() + ".txt";
-    fl[0].text = this.state.currentText;
-    console.log("sending new file event");
-    io.emit("newfile", {
-      fileName: fl[0].fileName,
-      text: fl[0].text
-    });
-    this.setState({
-      currentFile: fl[0].fileName,
-      tabList: fl,
-      isNewFile: false
-    });
+    // console.log(e.target.keyCode,e.isMouseClick);
+    var newName = this.refs.fileName.getValue();
+    var text = this.state.currentText;
+    if (newName != "") {
+      console.log("sending new file event");
+      var fl = this.state.tabList;
+      fl[0].fileName = newName + ".txt";
+      fl[0].text = text;
+      this.setState({
+        tabList: fl,
+        currentFile: newName + ".txt",
+        errorMessage: "",
+        isNewFile: false
+      });
+      io.emit("newfile", {
+        fileName: newName + ".txt",
+        text: text
+      });
+    } else {
+      this.setState({ errorMessage: "Please enter a file name" });
+    }
   }
   handleMenuToggle() {
     var isOpen = this.state.isMenuItemOpen;
@@ -162,7 +190,6 @@ class App extends Component {
         />
         <RaisedButton
           label="File List"
-          containerStyle={{ textalign: "right" }}
           onClick={this.handleMenuToggle.bind(this)}
         />{" "}
       </div>
