@@ -22,9 +22,9 @@ var TabsEditor = function(props) {
         flex: 1,
         overflowY: "auto",
         display: "flex",
-        flexDirection: "column"
+        flexDirection: "column",
       }}
-      contentContainerStyle={{ overflowY: "scroll" }}
+      contentContainerStyle={{ overflowX: "scroll" }}
     >
       {TabsComponents}
     </Tabs>

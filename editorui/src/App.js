@@ -7,8 +7,6 @@ import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import "./App.css";
 import TabsEditor from "./TabsEditor";
 import MenuItems from "./menuItems";
-import { Tabs, Tab } from "material-ui/Tabs";
-
 var io = openSocket("http://localhost:8000");
 class App extends Component {
   constructor() {
@@ -26,28 +24,29 @@ class App extends Component {
     io.on("updatefile", function(fileObj) {
       var fl = context.state.tabList;
       fl = fl.map((file, i) => {
-        console.log("updating file", fileObj);
-        if (file.fileName == fileObj.fileName) {
+        // console.log("updating file", fileObj);
+        if (file.fileName === fileObj.fileName) {
           file.text = fileObj.text;
           // console.log('trying to update the file',file.fileName);
         }
       });
       context.setState({ fileList: fl });
     });
-
+  
     io.on("initialData", function(filesObject) {
       // console.log(filesObject);
       var count = filesObject.filesObject.length;
       var errorMessage =
-        count == 0
-          ? this.state.errorMessage
+        count === 0
+          ? context.state.errorMessage
           : count +
-            " files found.Click on NewFile to create new.Click on FilList to easy pick a file";
+            " files found.   Click on NewFile to create new.  Click on FileList to easy pick a file";
       context.setState({
         tabList: filesObject.filesObject,
         currentFile: filesObject.filesObject[0].fileName || "untitled",
         errorMessage: errorMessage
       });
+
     });
     io.on("errormessage", function(err) {
       console.log("error errorMessage", err);
@@ -69,17 +68,18 @@ class App extends Component {
       var fl = context.state.tabList;
       fl.push(fileObj);
       context.setState({
-        tabList: fl
+        tabList: fl,
+        errorMessage: fl.length + " files found!"
       });
     });
   }
   savefile(e) {
     console.log(e.keyCode);
-    if (e.keyCode == 27) this.setState({ isMenuItemOpen: false });
-    if (e.keyCode == 83 && e.ctrlKey) {
+    if (e.keyCode === 27) this.setState({ isMenuItemOpen: false });
+    if (e.keyCode === 83 && e.ctrlKey) {
       e.preventDefault();
       // console.log(this.state);
-      if (this.state.currentFile == "untitled") {
+      if (this.state.currentFile === "untitled") {
         this.setState({ isNewFile: true });
         return;
       }
@@ -88,15 +88,16 @@ class App extends Component {
         fileName: this.state.currentFile,
         text: this.state.currentText
       });
+      this.setState({ errorMessage: "File saved!" });
     }
   }
   update(e) {
     // console.log(e.target.value);
     // this.setState({currentText:e.target.value});
     var fl = this.state.tabList;
-    fl = fl.map((file, i) => {
+    fl.map((file, i) => {
       // console.log('finding the file');
-      if (file.fileName == this.state.currentFile) {
+      if (file.fileName === this.state.currentFile) {
         file.text = e.target.value;
         this.setState({ currentText: file.text });
         // console.log('trying to update the file',file.fileName);
@@ -129,7 +130,7 @@ class App extends Component {
     // console.log(e.target.keyCode,e.isMouseClick);
     var newName = this.refs.fileName.getValue();
     var text = this.state.currentText;
-    if (newName != "") {
+    if (newName !== "") {
       console.log("sending new file event");
       var fl = this.state.tabList;
       fl[0].fileName = newName + ".txt";
@@ -137,7 +138,7 @@ class App extends Component {
       this.setState({
         tabList: fl,
         currentFile: newName + ".txt",
-        errorMessage: "",
+        errorMessage: "File created",
         isNewFile: false
       });
       io.emit("newfile", {
@@ -153,7 +154,6 @@ class App extends Component {
     this.setState({ isMenuItemOpen: !isOpen });
   }
   openMenuItem(e) {
-    var e, m;
     this.setState({
       isMenuItemOpen: !this.state.isMenuItemOpen,
       currentFile: e.target.innerText
