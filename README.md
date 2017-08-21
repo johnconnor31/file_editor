@@ -19,3 +19,13 @@ Create an interactive online file editor - A small, custom version of [c9](https
 - Fork this repo to your gitbub profile.
 - After completing this task send a link to your updated repo.
 - Do not give a pull request.
+
+
+
+IMPLEMENTATION:
+
+  Frontend is implemented with React and Material UI for Css. 
+  Backend is implemented with expressJs and websockets.
+  Files are stored in the local file system and no db is necessary.
+  The creation and updation functionality are implemented as of now and it is made sure that the updations reflect in every tab.
+  Deletion implementation is in progress.
