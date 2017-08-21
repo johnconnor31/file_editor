@@ -22,7 +22,7 @@ Create an interactive online file editor - A small, custom version of [c9](https
 
 
 
-IMPLEMENTATION:
+Solution IMPLEMENTATION:
 
   Frontend is implemented with React and Material UI for Css. 
   Backend is implemented with expressJs and websockets.
