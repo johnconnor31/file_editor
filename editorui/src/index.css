@@ -16,3 +16,8 @@ textarea{
   display:flex;
   width: 100%;
 }
+#tabs{
+  height: 95vh;
+  display:flex;
+  width: 80%; 
+}

@@ -4,12 +4,12 @@ import openSocket from 'socket.io-client';
 // import { Tabs, Tab } from 'material-ui/Tabs';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField';
-
+// import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import './App.css';
 import TabsEditor from './TabsEditor';
+import MenuItems from './menuItems';
 import { Tabs, Tab } from 'material-ui/Tabs';
-
 var io = openSocket('http://localhost:8000');
 class App extends Component {
   constructor(){
@@ -23,7 +23,8 @@ class App extends Component {
       currentFile:'untitled',
       currentText:'hello there.edit me',
       isNewFile:false,
-    }
+      isMenuItemOpen:false,
+  }
     var context = this;
 
     io.on('updatefile',function(fileObj){
@@ -49,8 +50,9 @@ class App extends Component {
     });
   }
   savefile(e){
-    console.log(e.keyCode,e.ctrlKey);
-    
+    console.log(e.keyCode);
+    if(e.keyCode == 27)
+      this.setState({isMenuItemOpen:false});
     if(e.keyCode == 83 && e.ctrlKey)
     {
       e.preventDefault();
@@ -104,23 +106,43 @@ class App extends Component {
             });
     this.setState({currentFile:fl[0].fileName,tabList:fl,isNewFile:false});
  }
+ handleMenuToggle(){
+  var isOpen = this.state.isMenuItemOpen;
+  this.setState({isMenuItemOpen:!isOpen});
+ }
+ openMenuItem(e){
+  var e,m;
+  this.setState({isMenuItemOpen:!this.state.isMenuItemOpen,
+    currentFile: e.target.innerText,
+  });
+ }
+ onMenuEscape(){
+  this.setState({isMenuItemOpen:false});
+ }
 
   render() {
     var enterText = <div><TextField ref='fileName' hintText="Enter a file name" />
-                    <RaisedButton label="Create File" onClick={this.saveNewFile.bind(this)}  secondary={true} style={{margin:'0px'}} /></div>;
-    var  createFile=  <RaisedButton label="New File" onClick={this.newFile.bind(this)} secondary={true} style={{margin:'0px',size:'5px'}} />;
+                    <RaisedButton label="Create File" onClick={this.saveNewFile.bind(this)}  secondary={true} style={{margin:'0px'}} />
+                    <RaisedButton label="File List" onClick={this.handleMenuToggle.bind(this)} /></div>;
+    var  createFile= <div> <RaisedButton label="New File" onClick={this.newFile.bind(this)} secondary={true} style={{margin:'0px',size:'5px'}} />
+                      <RaisedButton label="File List" containerStyle={{textalign:'right'}} onClick={this.handleMenuToggle.bind(this)} /> </div>;
 
-    var newFileComponent = (this.state.isNewFile? enterText:createFile);
+    var newFileComponent = (this.state.isNewFile? enterText:createFile) ;
     return (
-      <div className="App">
-        <header id='tools'>
-        <MuiThemeProvider>
-          {newFileComponent}
-        </MuiThemeProvider>
-        </header>
-
+  <div className="App">
+    <header id='tools'>
+      <MuiThemeProvider >
+        <MenuItems isMenuItemOpen={this.state.isMenuItemOpen} fileList = {this.state.tabList}
+                    openMenuItem={this.openMenuItem.bind(this)} onMenuEscape={this.onMenuEscape.bind(this)} />
+      </MuiThemeProvider>
       <MuiThemeProvider>
-        <TabsEditor update={this.update.bind(this)} savefile= {this.savefile.bind(this)}
+      <div>
+        {newFileComponent}
+        </div>
+      </MuiThemeProvider>
+    </header>
+      <MuiThemeProvider >
+        <TabsEditor  update={this.update.bind(this)} savefile= {this.savefile.bind(this)}
                    currentFile={this.state.currentFile} allTabs={this.state.tabList}
                    handleTabSwitch= {this.handleTabSwitch.bind(this)} />
       </MuiThemeProvider>
