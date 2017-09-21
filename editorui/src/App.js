@@ -1,108 +1,71 @@
 import React, { Component } from "react";
 import openSocket from "socket.io-client";
-
+import $ from 'jquery';
 import RaisedButton from "material-ui/RaisedButton";
 import TextField from "material-ui/TextField";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import "./App.css";
 import TabsEditor from "./TabsEditor";
 import MenuItems from "./menuItems";
-var io = openSocket("http://localhost:8000");
+import {SocketHandler,io} from "./socketHandler";
+import {
+  Toolbar,
+  ToolbarGroup,
+  ToolbarSeparator,
+  ToolbarTitle
+} from "material-ui/Toolbar";
+import MenuItem from "material-ui/MenuItem";
+
 class App extends Component {
   constructor() {
     super();
     this.state = {
       tabList: [],
       currentFile: "untitled",
-      currentText: "hello there.edit me",
+      currentContent: "",
       isNewFile: false,
       isMenuItemOpen: false,
       errorMessage: "Nothing to show here.Start by clicking on NewFile"
     };
+    SocketHandler(this);
     var context = this;
+    $(document).ready(function(){
+      console.log($('Drawer'));
+      $(document).on('keyup',function(e){
+        if(e.key === 'Escape')
+         context.setState({ isMenuItemOpen: false });
+      });
+    $(document).click(function(event) { 
+      console.log(event.target,'clicked');
+      if(!$(event.target).closest('Drawer').length && !$(event.target).closest('.fileList').length) {
+            console.log('closing menu');
+            context.setState({ isMenuItemOpen: false });
+          }
+        }); 
+    });
+  } 
 
-    io.on("updatefile", function(fileObj) {
-      var fl = context.state.tabList;
-      fl = fl.map((file, i) => {
-        // console.log("updating file", fileObj);
-        if (file.fileName === fileObj.fileName) {
-          file.text = fileObj.text;
-          // console.log('trying to update the file',file.fileName);
-        }
-      });
-      context.setState({ fileList: fl });
-    });
-  
-    io.on("initialData", function(filesObject) {
-      // console.log(filesObject);
-      var count = filesObject.filesObject.length;
-      var errorMessage =
-        count === 0
-          ? context.state.errorMessage
-          : count +
-            " files found.   Click on NewFile to create new.  Click on FileList to easy pick a file";
-      context.setState({
-        tabList: filesObject.filesObject,
-        currentFile: filesObject.filesObject[0].fileName || "untitled",
-        errorMessage: errorMessage
-      });
 
-    });
-    io.on("errormessage", function(err) {
-      console.log("error errorMessage", err);
-      var fl;
-      if (err.code === 1) {
-        fl = context.state.tabList;
-        console.log("duplicate file");
-        fl[0].fileName = "untitled";
-        context.setState({
-          tabList: fl,
-          currentFile: "untitled",
-          errorMessage: err.msg,
-          isNewFile: true
-        });
-      } else context.setState({ errorMessage: err.msg });
-    });
-    io.on("newfile", function(fileObj) {
-      console.log("received new file" + fileObj);
-      var fl = context.state.tabList;
-      fl.push(fileObj);
-      context.setState({
-        tabList: fl,
-        errorMessage: fl.length + " files found!"
-      });
-    });
-  }
-  savefile(e) {
-    console.log(e.keyCode);
-    if (e.keyCode === 27) this.setState({ isMenuItemOpen: false });
-    if (e.keyCode === 83 && e.ctrlKey) {
-      e.preventDefault();
-      // console.log(this.state);
-      if (this.state.currentFile === "untitled") {
-        this.setState({ isNewFile: true });
-        return;
-      }
-
-      io.emit("savefile", {
-        fileName: this.state.currentFile,
-        text: this.state.currentText
-      });
-      this.setState({ errorMessage: "File saved!" });
-    }
-  }
   update(e) {
     // console.log(e.target.value);
     // this.setState({currentText:e.target.value});
+
     var fl = this.state.tabList;
-    fl.map((file, i) => {
-      // console.log('finding the file');
+    fl = fl.map((file, i) => {
+      // console.log(e.target.value);
       if (file.fileName === this.state.currentFile) {
-        file.text = e.target.value;
-        this.setState({ currentText: file.text });
-        // console.log('trying to update the file',file.fileName);
+        file.fileContent = e.target.value;
+        this.setState({ currentContent: file.fileContent });
+        // console.log('current content',this.state.currentContent);
       }
     });
+    
+
+      io.emit("savefile", {
+        fileName: this.state.currentFile,
+        fileContent: this.state.currentContent,
+      });
+      this.setState({ errorMessage: "File saved!" });
   }
   handleTabSwitch(value) {
     this.setState({ currentFile: value });
@@ -113,37 +76,41 @@ class App extends Component {
     if (fl.length === 0 || (fl.length !== 0 && fl[0].fileName !== "untitled")) {
       fl.unshift({
         fileName: "untitled",
-        text: ""
+        fileContent: ""
       });
       console.log(fl);
       this.setState({
         tabList: fl,
         currentFile: "untitled",
-        errorMessage: "Press Ctrl+s to save the file"
+        currentContent:'',
+        errorMessage: "Press Ctrl+s to save the file",
+        isNewFile:true,
       });
     } else
       this.setState({
         errorMessage: "Please save the unnamed file first to Continue."
       });
   }
-  saveNewFile(e) {
+  saveNewFile() {
     // console.log(e.target.keyCode,e.isMouseClick);
     var newName = this.refs.fileName.getValue();
-    var text = this.state.currentText;
+    var content = this.state.currentContent;
+    console.log('content'+content);
     if (newName !== "") {
       console.log("sending new file event");
       var fl = this.state.tabList;
       fl[0].fileName = newName + ".txt";
-      fl[0].text = text;
+      fl[0].fileContent = content;
       this.setState({
         tabList: fl,
         currentFile: newName + ".txt",
         errorMessage: "File created",
         isNewFile: false
       });
+
       io.emit("newfile", {
         fileName: newName + ".txt",
-        text: text
+        fileContent: content
       });
     } else {
       this.setState({ errorMessage: "Please enter a file name" });
@@ -159,74 +126,59 @@ class App extends Component {
       currentFile: e.target.innerText
     });
   }
-  onMenuEscape() {
-    this.setState({ isMenuItemOpen: false });
-  }
-
+  
   render() {
-    var enterText = (
-      <div>
-        <TextField ref="fileName" hintText="Enter a file name" />
-        <RaisedButton
-          label="Create File"
-          onClick={this.saveNewFile.bind(this)}
-          secondary={true}
-          style={{ margin: "0px" }}
-        />
-        <RaisedButton
-          label="File List"
-          onClick={this.handleMenuToggle.bind(this)}
-        />
-      </div>
-    );
+    var saveMode = (
+    <div>
+      <TextField hintText="Enter a file name" ref='fileName'/>
+      <RaisedButton class='createFile'
+        label="Create File"
+        onClick={this.saveNewFile.bind(this)}
+        secondary={true}
+        style={{ margin: "0px" }}
+      />
+    </div>
+  );
 
-    var createFile = (
-      <div>
-        {" "}<RaisedButton
-          label="New File"
-          onClick={this.newFile.bind(this)}
-          secondary={true}
-          style={{ margin: "0px", size: "5px" }}
-        />
-        <RaisedButton
-          label="File List"
-          onClick={this.handleMenuToggle.bind(this)}
-        />{" "}
-      </div>
-    );
-
-    var newFileComponent = this.state.isNewFile ? enterText : createFile;
-
-    return (
-      <div className="App">
-        <header id="tools">
-          <MuiThemeProvider>
+  var normalMode = (
+    <div>
+      {" "}
+      <RaisedButton
+        label="New File"
+        onClick={this.newFile.bind(this)}
+        secondary={true}
+        style={{ margin: "0px", size: "5px" }}
+      />
+    </div>
+  );
+  var tools = this.state.isNewFile ? saveMode : normalMode; 
+  return (
+      <MuiThemeProvider>
+        <div className="App">
+          <header id="tools">
             <MenuItems
-              isMenuItemOpen={this.state.isMenuItemOpen}
-              fileList={this.state.tabList}
-              openMenuItem={this.openMenuItem.bind(this)}
-              onMenuEscape={this.onMenuEscape.bind(this)}
+                isMenuItemOpen={this.state.isMenuItemOpen}
+                fileList={this.state.tabList}
+                openMenuItem={this.openMenuItem.bind(this)}
+              />
+            
+            <Toolbar>
+               <RaisedButton className='fileList'
+                  label="File List"
+                  onClick={this.handleMenuToggle.bind(this)}
+                />
+                {tools}
+            </Toolbar>
+          </header>
+          <div id="errorMessage">{this.state.errorMessage}</div>
+            <TabsEditor
+              update={this.update.bind(this)}
+              currentFile={this.state.currentFile}
+              allTabs={this.state.tabList}
+              handleTabSwitch={this.handleTabSwitch.bind(this)}
             />
-          </MuiThemeProvider>
-          <MuiThemeProvider>
-            <div>
-              {newFileComponent}
-            </div>
-          </MuiThemeProvider>
-        </header>
-        <div id="errorMessage">
-          {this.state.errorMessage}
         </div>
-        <MuiThemeProvider>
-          <TabsEditor
-            update={this.update.bind(this)}
-            savefile={this.savefile.bind(this)}
-            currentFile={this.state.currentFile}
-            allTabs={this.state.tabList}
-            handleTabSwitch={this.handleTabSwitch.bind(this)}
-          />
-        </MuiThemeProvider>
-      </div>
+      </MuiThemeProvider>
     );
   }
 }

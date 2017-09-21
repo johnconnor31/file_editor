@@ -4,16 +4,27 @@ import { Tabs, Tab } from "material-ui/Tabs";
 var TabsEditor = function(props) {
   var update = props.update;
   var savefile = props.savefile;
-  console.log(props.allTabs);
+  // console.log(props.allTabs);
   var TabsComponents = props.allTabs.map((tab, i) => {
     // console.log(i,tab);
     return (
       <Tab key={i} label={tab.fileName} value={tab.fileName}>
-        <textarea value={tab.text} onKeyDown={savefile} onChange={update} />
+        <textarea
+          value={tab.fileContent}
+          onKeyDown={e =>
+            (e.keyCode === 83 && e.ctrlKey)
+              ? (function(e) {
+                  console.log("gotcha save");
+                  e.preventDefault();
+                  update;
+                })(e)
+              : ""}
+          onChange={update}
+        />
       </Tab>
     );
   });
-  console.log(TabsComponents);
+  // console.log(TabsComponents);
   return (
     <Tabs
       value={props.currentFile}
@@ -22,7 +33,7 @@ var TabsEditor = function(props) {
         flex: 1,
         overflowY: "auto",
         display: "flex",
-        flexDirection: "column",
+        flexDirection: "column"
       }}
       contentContainerStyle={{ overflowX: "scroll" }}
     >

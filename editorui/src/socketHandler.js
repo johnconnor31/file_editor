@@ -1,32 +1,34 @@
 import openSocket from "socket.io-client";
-var io = openSocket("http://localhost:8000");
-const SocketHandler = context => {
-  io.on("updatefile", function(fileObj) {
-    var fl = context.state.tabList;
-    fl = fl.map((file, i) => {
-      console.log("updating file", fileObj);
-      if (file.fileName === fileObj.fileName) {
-        file.text = fileObj.text;
-        // console.log('trying to update the file',file.fileName);
-      }
-    });
-    context.setState({ fileList: fl });
-  });
-
+var io = openSocket("http://192.168.0.106:8000");
+const SocketHandler = (context) => {
     io.on("initialData", function(filesObject) {
-      // console.log(filesObject);
-      var count = filesObject.filesObject.length;
-      var errorMessage =
-        count === 0
-          ? this.state.errorMessage
-          : count +
-            " files found.Click on NewFile to create new.Click on FileList to easy pick a file";
-      context.setState({
-        tabList: filesObject.filesObject,
-        currentFile: filesObject.filesObject[0].fileName || "untitled",
-        errorMessage: errorMessage
-      });
+        // console.log(filesObject);
+        var count = filesObject.length;
+        var errorMessage =
+          count === 0
+            ? context.state.errorMessage
+            : count +
+              " files found.   Click on NewFile to create new.  Click on FileList to easy pick a file";
+        context.setState({
+          tabList: filesObject,
+          currentFile: filesObject[0].fileName || "untitled",
+          errorMessage
+        });
     });
+
+    io.on("updatefile", function(fileObj) {
+      console.log('updating file');
+    var fl = context.state.tabList;
+      fl = fl.map((file, i) => {
+        // console.log("updating file", fileObj);
+        if (file.fileName === fileObj.fileName) {
+          file.fileContent = fileObj.fileContent;
+          // console.log('trying to update the file',file.fileName);
+        }
+      });
+      context.setState({ fileList: fl });
+    });
+
     io.on("errormessage", function(err) {
       console.log("error errorMessage", err);
       var fl;
@@ -48,9 +50,9 @@ const SocketHandler = context => {
       fl.push(fileObj);
       context.setState({
         tabList: fl,
-        errorMessage:fl.length+' files found!',
+        errorMessage: fl.length + " files found!"
       });
     });
-};
+  }
 
-export default {SocketHandler,io};
+export {SocketHandler,io};

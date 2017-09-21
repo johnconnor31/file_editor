@@ -7,10 +7,10 @@ const MenuItems = (props)=>{
   var openItem = props.openMenuItem;
   var onMenuEscape = props.onMenuEscape;
   var menuList = fileList. map((file,i)=>{
-    return (<MenuItem key={i} onClick={openItem} >{file.fileName}</MenuItem>);
+    return (<MenuItem key={i} onClick={openItem}>{file.fileName}</MenuItem>);
   });
   return(
-        <Drawer open={isOpen}  >
+        <Drawer open={isOpen} swipeAreaWidth='30px'>
           {menuList}
         </Drawer>
         );
