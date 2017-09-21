@@ -22,10 +22,27 @@ Create an interactive online file editor - A small, custom version of [c9](https
 
 
 
-IMPLEMENTATION:
+Solution IMPLEMENTATION:
 
   Frontend is implemented with React and Material UI for Css. 
   Backend is implemented with expressJs and websockets.
   Files are stored in the local file system and no db is necessary.
   The creation and updation functionality are implemented as of now and it is made sure that the updations reflect in every tab.
   Deletion implementation is in progress.
+  
+  
+ How to make it work:
+  Clone the repository into your local.
+  Run 'cd file_editor' from command prompt
+  run 'npm install'  to install the dependencies.It should install all the nodeModules.
+  Now, run 'node textServer.js' to start the server. It will be running on 'localhost:8000'.
+  
+  Now, open another command window and cd to /file_editor/editorui
+  
+  Now, run 'npm install' again to install all the client dependencies.
+  
+  now, run 'npm start' to start the client. It will redirect to 'localhost:3000'.
+  
+  Start adding files!
+  
+  Please contact me if there is any problem.
