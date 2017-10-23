@@ -5,22 +5,32 @@ var fs = require("fs");
 var fs1 = require("fs");
 var fs2 = require("fs");
 io.listen(8000);
-var filesObject;
-
+function readItem(itemPath,result){
+  console.log('current item'+itemPath);
+    if(fs.lstatSync(itemPath).isDirectory()){
+      var folder=[];
+      fs.readdirSync(itemPath).map((item)=> readItem(itemPath+'\\'+item,folder));
+      console.log('read the folder'+itemPath,folder);
+      result.push({
+        folderName:itemPath,
+        folderContent:folder
+      });
+    }
+    else{
+      var fileContent = fs.readFileSync(itemPath, "utf8");
+      console.log('read the file'+itemPath,fileContent);
+      result.push({
+        fileName:itemPath,
+        fileContent});
+    }
+  }
 console.log("listening on port 8000");
 io.on("connection", function(client) {
   console.log("new user");
-
-  fs.readdir("allFiles", function(err, fileList) {
-    filesObject = [];
-    filesObject = fileList.map(function(fileName, i) {
-      var fileContent = fs1.readFileSync("allFiles\\" + fileName, "utf8");
-      return { fileName, 
-                fileContent };
-      });
-      client.emit("initialData", filesObject);
-  });
-
+  var filesObject=[];
+  readItem('allFiles',filesObject);
+  console.log('filesObject'+filesObject);
+  client.emit("initialData", filesObject);
   // console.log(filesObject);
   client.on("newfile", function(fileObj) {
     console.log('trying to create file with ',fileObj.fileName,fileObj.fileContent);

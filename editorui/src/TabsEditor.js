@@ -1,6 +1,6 @@
 import React from "react";
 import { Tabs, Tab } from "material-ui/Tabs";
-
+import AceEditor from 'react-ace';
 var TabsEditor = function(props) {
   var update = props.update;
   var savefile = props.savefile;
@@ -9,18 +9,14 @@ var TabsEditor = function(props) {
     // console.log(i,tab);
     return (
       <Tab key={i} label={tab.fileName} value={tab.fileName}>
-        <textarea
-          value={tab.fileContent}
-          onKeyDown={e =>
-            (e.keyCode === 83 && e.ctrlKey)
-              ? (function(e) {
-                  console.log("gotcha save");
-                  e.preventDefault();
-                  update;
-                })(e)
-              : ""}
-          onChange={update}
-        />
+        <AceEditor
+            mode="csharp"
+            theme="terminal"
+            onChange={update}
+            name="Editor"
+            editorProps={{$blockScrolling: true}} 
+            value = {tab.fileContent} />
+            
       </Tab>
     );
   });

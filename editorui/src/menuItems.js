@@ -10,7 +10,7 @@ const MenuItems = (props)=>{
     return (<MenuItem key={i} onClick={openItem}>{file.fileName}</MenuItem>);
   });
   return(
-        <Drawer open={isOpen} swipeAreaWidth='30px'>
+        <Drawer open={isOpen} >
           {menuList}
         </Drawer>
         );

@@ -15,6 +15,7 @@ import {
   ToolbarTitle
 } from "material-ui/Toolbar";
 import MenuItem from "material-ui/MenuItem";
+import SideMenu from './SideMenu';
 
 class App extends Component {
   constructor() {
@@ -46,7 +47,7 @@ class App extends Component {
   } 
 
 
-  update(e) {
+  update(value,e) {
     // console.log(e.target.value);
     // this.setState({currentText:e.target.value});
 
@@ -54,7 +55,7 @@ class App extends Component {
     fl = fl.map((file, i) => {
       // console.log(e.target.value);
       if (file.fileName === this.state.currentFile) {
-        file.fileContent = e.target.value;
+        file.fileContent = value;
         this.setState({ currentContent: file.fileContent });
         // console.log('current content',this.state.currentContent);
       }
@@ -131,7 +132,7 @@ class App extends Component {
     var saveMode = (
     <div>
       <TextField hintText="Enter a file name" ref='fileName'/>
-      <RaisedButton class='createFile'
+      <RaisedButton className='createFile'
         label="Create File"
         onClick={this.saveNewFile.bind(this)}
         secondary={true}
@@ -153,15 +154,13 @@ class App extends Component {
   );
   var tools = this.state.isNewFile ? saveMode : normalMode; 
   return (
-      <MuiThemeProvider>
+    <MuiThemeProvider>
+      <div>
+      <div className='sidemenu'>
+      <SideMenu folders= {this.state.tabList} onClick={this.openMenuItem.bind(this)} />
+      </div>
         <div className="App">
           <header id="tools">
-            <MenuItems
-                isMenuItemOpen={this.state.isMenuItemOpen}
-                fileList={this.state.tabList}
-                openMenuItem={this.openMenuItem.bind(this)}
-              />
-            
             <Toolbar>
                <RaisedButton className='fileList'
                   label="File List"
@@ -178,7 +177,9 @@ class App extends Component {
               handleTabSwitch={this.handleTabSwitch.bind(this)}
             />
         </div>
-      </MuiThemeProvider>
+      </div>
+    </MuiThemeProvider>
+    
     );
   }
 }
