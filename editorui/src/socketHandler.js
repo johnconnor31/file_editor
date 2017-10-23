@@ -1,5 +1,5 @@
 import openSocket from "socket.io-client";
-var io = openSocket("http://192.168.0.106:8000");
+var io = openSocket("http://localhost:8000");
 const SocketHandler = (context) => {
     io.on("initialData", function(filesObject) {
         // console.log(filesObject);
