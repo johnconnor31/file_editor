@@ -1,26 +1,28 @@
 {
-  "name": "file_editor",
-  "version": "1.0.0",
-  "description": "Simple online file editor built on ReactJS",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/johnconnor31/file_editor.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/johnconnor31/file_editor/issues"
-  },
-  "homepage": "https://github.com/johnconnor31/file_editor#readme",
+  "name": "editorui",
+  "version": "0.1.0",
+  "private": true,
   "dependencies": {
-    "express": "^4.15.4",
-    "expressjs": "^1.0.1",
-    "http": "0.0.0",
-    "socket.io": "^2.0.3"
+    "boostrap": "^2.0.0",
+    "font-awesome": "^4.7.0",
+    "bootstrap": "^3.3.7",
+    "jquery": "^3.2.1",
+    "material-ui": "^0.19.0",
+    "material-ui-scrollable-tabs": "^1.0.0",
+    "react": "^15.6.1",
+    "react-ace": "^5.4.0",
+    "react-dom": "^15.6.1",
+    "react-material-ui-form-validator": "^0.5.0",
+    "react-tap-event-plugin": "^2.0.1",
+    "socket.io-client": "^2.0.3"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "react-scripts": "1.0.11"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  }
 }
