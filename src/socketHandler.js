@@ -1,58 +1,32 @@
-import openSocket from "socket.io-client";
-var io = openSocket("localhost:8000");
-const SocketHandler = (context) => {
-    io.on("initialData", function(filesObject) {
-        // console.log(filesObject);
-        var count = filesObject.length;
-        var errorMessage =
-          count === 0
-            ? context.state.errorMessage
-            : count +
-              " files found.   Click on NewFile to create new.  Click on FileList to easy pick a file";
-        context.setState({
-          tabList: filesObject,
-          currentFile: filesObject[0].fileName || "untitled",
-          errorMessage
+import { io } from "socket.io-client";
+
+export const socketIo = io();
+
+export const initSocketHandler = (fileList, setFileList, setCurrentFile) => {
+    socketIo.on("initialData", function (filesObject) {
+        console.log('init', filesObject);
+        setFileList(filesObject || []);
+        setCurrentFile(filesObject[0] || { fileName: "Untitled", fileContent: "" });
+    });
+
+    socketIo.on("updatefile", function ({ fileName, fileContent }) {
+        let fl = [ ...fileList ];
+        fl.forEach((file) => {
+            // console.log("updating file", fileObj);
+            if (file.fileName === fileName) {
+                file.fileContent = fileContent;
+                // console.log('trying to update the file',file.fileName);
+            }
         });
+        setFileList(fl);
     });
 
-    io.on("updatefile", function(fileObj) {
-      console.log('updating file');
-    var fl = context.state.tabList;
-      fl = fl.map((file, i) => {
-        // console.log("updating file", fileObj);
-        if (file.fileName === fileObj.fileName) {
-          file.fileContent = fileObj.fileContent;
-          // console.log('trying to update the file',file.fileName);
-        }
-      });
-      context.setState({ fileList: fl });
+    socketIo.on("errormessage", function (err) {
+        console.log("error errorMessage", err);
     });
 
-    io.on("errormessage", function(err) {
-      console.log("error errorMessage", err);
-      var fl;
-      if (err.code === 1) {
-        fl = context.state.tabList;
-        console.log("duplicate file");
-        fl[0].fileName = "untitled";
-        context.setState({
-          tabList: fl,
-          currentFile: "untitled",
-          errorMessage: err.msg,
-          isNewFile: true
-        });
-      } else context.setState({ errorMessage: err.msg });
+    socketIo.on("newfile", function (fileObj) {
+        console.log("received new file" + fileObj);
+        setFileList([ ...fileList, fileObj ]);
     });
-    io.on("newfile", function(fileObj) {
-      console.log("received new file" + fileObj);
-      var fl = context.state.tabList;
-      fl.push(fileObj);
-      context.setState({
-        tabList: fl,
-        errorMessage: fl.length + " files found!"
-      });
-    });
-  }
-
-export {SocketHandler,io};
+}
