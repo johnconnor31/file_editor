@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from "react";
 import $ from 'jquery';
 import Button from "@mui/material/Button";
-import ThemeProvider from "@mui/material/styles/ThemeProvider";
 import "./App.css";
 import TabsEditor from "./TabsEditor";
 import { initSocketHandler, socketIo } from "./socketHandler";
-import { AppBar, Box, CssBaseline, Divider, Drawer, IconButton, ListItem, ListItemText, Menu, MenuItem, Typography } from "@mui/material";
+import { AppBar, Box, Divider, Drawer, IconButton, ListItem, ListItemText, Menu, MenuItem, Typography } from "@mui/material";
 import Toolbar from "@mui/material/Toolbar";
 import { Menu as MenuIcon, ChevronLeft, Flare } from '@mui/icons-material';
-import SideMenu from './SideMenu';
+import FileList from './FileList';
 
-const drawerWidth = 200;
+const drawerWidth = 250;
 export default function App() {
     const [fileList, setFileList] = useState(['Untitled']);
+    const [tabs, setTabs] = useState([]);
     console.log('file list', fileList);
     const [currentFile, setCurrentFile] = useState({ fileName: 'Untitled', fileContent: '' });
     const [menu, setMenu] = useState([]);
@@ -21,20 +21,6 @@ export default function App() {
 
     useEffect(() => {
         initSocketHandler(fileList, setFileList, setCurrentFile);
-        // $(document).ready(function () {
-        //     console.log($('Drawer'));
-        //     $(document).on('keyup', function (e) {
-        //         if (e.key === 'Escape')
-        //             setAnchorEl(null);
-        //     });
-        //     $(document).click(function (event) {
-        //         console.log(event.target, 'clicked');
-        //         if (!$(event.target).closest('Drawer').length && !$(event.target).closest('.fileList').length) {
-        //             console.log('closing menu');
-        //             setAnchorEl(null);
-        //         }
-        //     });
-        // });
     }, []);
 
 
@@ -106,6 +92,14 @@ export default function App() {
         }
     }
 
+    const handleFileClick = (file) => {
+        setCurrentFile(file);
+        const fileId = tabs.findIndex(t => t.fileName === file.fileName);
+        if (fileId === -1) {
+            setTabs([...tabs, file]);
+        }
+    }
+
     return (
         <>
             <Box>
@@ -150,15 +144,13 @@ export default function App() {
                             </IconButton>
                         </Box>
                         <Divider />
-                        {fileList?.map((file) => <ListItem key={file?.fileName}>
-                            <ListItemText primary={file?.fileName} />
-                        </ListItem>)}
+                        <FileList files={fileList} onFileClick={handleFileClick} />
                     </>
                 </Drawer>
             </Box>
             <TabsEditor
                 updateFile={updateFile}
-                openedTabs={fileList}
+                openedTabs={tabs}
                 currentFile={currentFile}
                 handleTabSwitch={setCurrentFile}
                 drawerWidth={drawerWidth}
