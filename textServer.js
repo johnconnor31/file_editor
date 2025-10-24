@@ -2,30 +2,30 @@ var app = require("express")();
 var http = require("http").Server(app);
 var io = require("socket.io")(http);
 var fs = require("fs");
-var fs1 = require("fs");
-var fs2 = require("fs");
-io.listen(8000);
+var path = require("path");
 var filesObject;
 
-console.log("listening on port 8000");
+http.listen(8000, "localhost", function() {
+  console.log("Backend server listening on localhost:8000");
+});
+
 io.on("connection", function(client) {
   console.log("new user");
 
   fs.readdir("allFiles", function(err, fileList) {
     filesObject = [];
     filesObject = fileList.map(function(fileName, i) {
-      var fileContent = fs1.readFileSync("allFiles\\" + fileName, "utf8");
+      var fileContent = fs.readFileSync(path.join("allFiles", fileName), "utf8");
       return { fileName, 
                 fileContent };
       });
       client.emit("initialData", filesObject);
   });
 
-  // console.log(filesObject);
   client.on("newfile", function(fileObj) {
     console.log('trying to create file with ',fileObj.fileName,fileObj.fileContent);
-    fs2.writeFile(
-      "allFiles\\" + fileObj.fileName,
+    fs.writeFile(
+      path.join("allFiles", fileObj.fileName),
       fileObj.fileContent,
       { flag: "wx" },
       function(err) {
@@ -55,8 +55,8 @@ io.on("connection", function(client) {
   });
   client.on("savefile", function(fileObj) {
     console.log('trying to save file with ',fileObj.fileName,fileObj.fileContent);
-    fs2.writeFile(
-      "allFiles\\" + fileObj.fileName,
+    fs.writeFile(
+      path.join("allFiles", fileObj.fileName),
       fileObj.fileContent,
       { flag: "w" },
       function(err) {
