@@ -1,5 +1,8 @@
 import openSocket from "socket.io-client";
-var io = openSocket("http://localhost:8000");
+const socketUrl = process.env.NODE_ENV === 'production' 
+  ? window.location.origin 
+  : `https://${window.location.hostname}:8000`;
+var io = openSocket(socketUrl);
 const SocketHandler = (context) => {
     io.on("initialData", function(filesObject) {
         // console.log(filesObject);
