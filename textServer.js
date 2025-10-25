@@ -1,12 +1,18 @@
 var app = require("express")();
 var http = require("http").Server(app);
-var io = require("socket.io")(http);
+var io = require("socket.io")(http, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+    credentials: true
+  }
+});
 var fs = require("fs");
 var path = require("path");
 var filesObject;
 
-http.listen(8000, "localhost", function() {
-  console.log("Backend server listening on localhost:8000");
+http.listen(8000, "0.0.0.0", function() {
+  console.log("Backend server listening on 0.0.0.0:8000");
 });
 
 io.on("connection", function(client) {
