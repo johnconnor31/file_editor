@@ -1,13 +1,15 @@
 import React, { Component } from "react";
 import $ from "jquery";
-import RaisedButton from "material-ui/RaisedButton";
-import TextField from "material-ui/TextField";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
+import Button from "@material-ui/core/Button";
+import TextField from "@material-ui/core/TextField";
+import { ThemeProvider as MuiThemeProvider, createTheme } from "@material-ui/core/styles";
+import Toolbar from "@material-ui/core/Toolbar";
 import "./App.css";
 import TabsEditor from "./TabsEditor";
 import MenuItems from "./menuItems";
 import { SocketHandler, io } from "./socketHandler";
-import { Toolbar } from "material-ui/Toolbar";
+
+const theme = createTheme();
 
 class App extends Component {
   constructor() {
@@ -39,17 +41,13 @@ class App extends Component {
   }
 
   update(e) {
-    // console.log(e.target.value);
-    // this.setState({currentText:e.target.value});
-
     var fl = this.state.tabList;
     fl = fl.map((file, i) => {
-      // console.log(e.target.value);
       if (file.fileName === this.state.currentFile) {
         file.fileContent = e.target.value;
         this.setState({ currentContent: file.fileContent });
-        // console.log('current content',this.state.currentContent);
       }
+      return file;
     });
 
     io.emit("savefile", {
@@ -63,13 +61,11 @@ class App extends Component {
   }
   newFile() {
     var fl = this.state.tabList;
-    // console.log(fl);
     if (fl.length === 0 || (fl.length !== 0 && fl[0].fileName !== "untitled")) {
       fl.unshift({
         fileName: "untitled",
         fileContent: "",
       });
-      console.log(fl);
       this.setState({
         tabList: fl,
         currentFile: "untitled",
@@ -83,12 +79,9 @@ class App extends Component {
       });
   }
   saveNewFile() {
-    // console.log(e.target.keyCode,e.isMouseClick);
-    var newName = this.refs.fileName.getValue();
+    var newName = this.refs.fileName.value;
     var content = this.state.currentContent;
-    console.log("content" + content);
     if (newName !== "") {
-      console.log("sending new file event");
       var fl = this.state.tabList;
       fl[0].fileName = newName + ".txt";
       fl[0].fileContent = content;
@@ -121,31 +114,34 @@ class App extends Component {
   render() {
     var saveMode = (
       <div>
-        <TextField hintText="Enter a file name" ref="fileName" />
-        <RaisedButton
-          class="createFile"
-          label="Create File"
+        <input type="text" placeholder="Enter a file name" ref="fileName" />
+        <Button
+          className="createFile"
+          variant="contained"
+          color="secondary"
           onClick={this.saveNewFile.bind(this)}
-          secondary={true}
           style={{ margin: "0px" }}
-        />
+        >
+          Create File
+        </Button>
       </div>
     );
 
     var normalMode = (
       <div>
-        {" "}
-        <RaisedButton
-          label="New File"
+        <Button
+          variant="contained"
+          color="secondary"
           onClick={this.newFile.bind(this)}
-          secondary={true}
-          style={{ margin: "0px", size: "5px" }}
-        />
+          style={{ margin: "0px" }}
+        >
+          New File
+        </Button>
       </div>
     );
     var tools = this.state.isNewFile ? saveMode : normalMode;
     return (
-      <MuiThemeProvider>
+      <MuiThemeProvider theme={theme}>
         <div className="App">
           <header id="tools">
             <MenuItems

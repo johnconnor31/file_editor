@@ -1,6 +1,6 @@
 import React from "react";
-import Drawer from "material-ui/Drawer";
-import MenuItem from "material-ui/MenuItem";
+import Drawer from "@material-ui/core/Drawer";
+import MenuItem from "@material-ui/core/MenuItem";
 const MenuItems = (props) => {
   var isOpen = props.isMenuItemOpen;
   var fileList = props.fileList;
