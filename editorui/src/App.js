@@ -154,9 +154,7 @@ class App extends Component {
               openMenuItem={this.openMenuItem.bind(this)}
             />
 
-            <Toolbar>
-              {tools}
-            </Toolbar>
+            <Toolbar>{tools}</Toolbar>
           </header>
           <div id="errorMessage">{this.state.errorMessage}</div>
           <TabsEditor
