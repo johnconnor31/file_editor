@@ -7,6 +7,7 @@ import {
   DialogContent,
   DialogTitle,
   Snackbar,
+  TextField,
 } from "@material-ui/core";
 import {
   ThemeProvider as MuiThemeProvider,
@@ -29,8 +30,9 @@ class App extends Component {
       currentFile: "",
       currentContent: "",
       isMenuItemOpen: false,
-      errorMessage: "Nothing to show here.Start by clicking on NewFile",
+      errorMessage: "",
       isErrorMsg: false,
+      newFileName: "",
     };
     SocketHandler(this);
     var context = this;
@@ -67,30 +69,24 @@ class App extends Component {
     });
     this.setState({ errorMessage: "File saved!" });
   }
-  handleTabSwitch(value) {
-    this.setState({ currentFile: value });
+  handleTabSwitch(e) {
+    this.setState({ currentFile: e.target.textContent });
   }
-  newFile() {
+  addNewFile() {
     var fl = this.state.tabList;
-    if (fl.length === 0 || (fl.length !== 0 && fl[0].fileName !== "untitled")) {
-      fl.unshift({
-        fileName: "untitled",
-        fileContent: "",
-      });
-      this.setState({
-        tabList: fl,
-        currentFile: "untitled",
-        currentContent: "",
-        errorMessage: "Press Ctrl+s to save the file",
-        isNewFile: true,
-      });
-    } else
-      this.setState({
-        errorMessage: "Please save the unnamed file first to Continue.",
-      });
+    fl.unshift({
+      fileName: "untitled",
+      fileContent: "",
+    });
+    this.setState({
+      tabList: fl,
+      currentFile: "untitled",
+      currentContent: "",
+      isNewFile: true,
+    });
   }
   saveNewFile() {
-    var newName = this.refs.fileName.value;
+    var newName = this.state.newFileName;
     var content = this.state.currentContent;
     if (newName !== "") {
       var fl = this.state.tabList;
@@ -111,6 +107,11 @@ class App extends Component {
       this.setState({ errorMessage: "Please enter a file name" });
     }
   }
+
+  handleCloseNewFileDialog() {
+    this.setState({ isNewFile: false });
+  }
+
   handleMenuToggle() {
     var isOpen = this.state.isMenuItemOpen;
     this.setState({ isMenuItemOpen: !isOpen });
@@ -126,35 +127,11 @@ class App extends Component {
     this.setState({ errorMessage: "" });
   }
 
-  render() {
-    var saveMode = (
-      <div>
-        <input type="text" placeholder="Enter a file name" ref="fileName" />
-        <Button
-          className="createFile"
-          variant="contained"
-          color="secondary"
-          onClick={this.saveNewFile.bind(this)}
-          style={{ margin: "0px" }}
-        >
-          Create File
-        </Button>
-      </div>
-    );
+  fileNameChange(e) {
+    this.setState({ newFileName: e.target.value });
+  }
 
-    var normalMode = (
-      <div>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={this.newFile.bind(this)}
-          style={{ margin: "0px" }}
-        >
-          New File
-        </Button>
-      </div>
-    );
-    var tools = this.state.isNewFile ? saveMode : normalMode;
+  render() {
     return (
       <MuiThemeProvider theme={theme}>
         <div className="App">
@@ -164,26 +141,42 @@ class App extends Component {
               fileList={this.state.tabList}
               openMenuItem={this.openMenuItem.bind(this)}
             />
-
-            <Toolbar>{tools}</Toolbar>
           </header>
           <Snackbar
             open={Boolean(this.state.errorMessage)}
             autoHideDuration={6000}
-            onClose={this.handleCloseError}
+            onClose={this.handleCloseError.bind(this)}
+            message={this.state.errorMessage}
+          />
+          <Dialog
+            open={this.state.isNewFile}
+            onClose={this.handleCloseNewFileDialog.bind(this)}
           >
-            <Alert
-              onClose={this.handleCloseError}
-              severity={this.state.isErrorMsg ? "error" : "success"}
-            >
-              {this.state.errorMessage}
-            </Alert>
-          </Snackbar>
+            <DialogTitle>Enter file name</DialogTitle>
+            <DialogContent>
+              <TextField
+                placeholder="Enter a file name"
+                onChange={this.fileNameChange.bind(this)}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button
+                className="createFile"
+                variant="contained"
+                color="secondary"
+                onClick={this.saveNewFile.bind(this)}
+                style={{ margin: "0px" }}
+              >
+                Create File
+              </Button>
+            </DialogActions>
+          </Dialog>
           <TabsEditor
             update={this.update.bind(this)}
             currentFile={this.state.currentFile}
             allTabs={this.state.tabList}
             handleTabSwitch={this.handleTabSwitch.bind(this)}
+            addNewFile={this.addNewFile.bind(this)}
           />
         </div>
       </MuiThemeProvider>
