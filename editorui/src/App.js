@@ -155,13 +155,6 @@ class App extends Component {
             />
 
             <Toolbar>
-              <IconButton
-                color="inherit"
-                aria-label="open drawer"
-                onClick={handleDrawerOpen}
-                edge="start"
-                className={clsx(classes.menuButton, open && classes.hide)}
-              >
               {tools}
             </Toolbar>
           </header>
