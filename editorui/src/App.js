@@ -1,8 +1,18 @@
 import React, { Component } from "react";
 import $ from "jquery";
 import Button from "@material-ui/core/Button";
-import TextField from "@material-ui/core/TextField";
-import { ThemeProvider as MuiThemeProvider, createTheme } from "@material-ui/core/styles";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Snackbar,
+} from "@material-ui/core";
+import {
+  ThemeProvider as MuiThemeProvider,
+  createTheme,
+} from "@material-ui/core/styles";
+import Alert from "@material-ui/lab/Alert";
 import Toolbar from "@material-ui/core/Toolbar";
 import "./App.css";
 import TabsEditor from "./TabsEditor";
@@ -20,6 +30,7 @@ class App extends Component {
       currentContent: "",
       isMenuItemOpen: false,
       errorMessage: "Nothing to show here.Start by clicking on NewFile",
+      isErrorMsg: false,
     };
     SocketHandler(this);
     var context = this;
@@ -111,6 +122,10 @@ class App extends Component {
     });
   }
 
+  handleCloseError() {
+    this.setState({ errorMessage: "" });
+  }
+
   render() {
     var saveMode = (
       <div>
@@ -152,7 +167,18 @@ class App extends Component {
 
             <Toolbar>{tools}</Toolbar>
           </header>
-          <div id="errorMessage">{this.state.errorMessage}</div>
+          <Snackbar
+            open={Boolean(this.state.errorMessage)}
+            autoHideDuration={6000}
+            onClose={this.handleCloseError}
+          >
+            <Alert
+              onClose={this.handleCloseError}
+              severity={this.state.isErrorMsg ? "error" : "success"}
+            >
+              {this.state.errorMessage}
+            </Alert>
+          </Snackbar>
           <TabsEditor
             update={this.update.bind(this)}
             currentFile={this.state.currentFile}
