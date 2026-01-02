@@ -1,50 +1,42 @@
 import React, { Component } from "react";
-import openSocket from "socket.io-client";
-import $ from 'jquery';
+import $ from "jquery";
 import RaisedButton from "material-ui/RaisedButton";
 import TextField from "material-ui/TextField";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import "./App.css";
 import TabsEditor from "./TabsEditor";
 import MenuItems from "./menuItems";
-import {SocketHandler,io} from "./socketHandler";
-import {
-  Toolbar,
-  ToolbarGroup,
-  ToolbarSeparator,
-  ToolbarTitle
-} from "material-ui/Toolbar";
-import MenuItem from "material-ui/MenuItem";
+import { SocketHandler, io } from "./socketHandler";
+import { Toolbar } from "material-ui/Toolbar";
 
 class App extends Component {
   constructor() {
     super();
     this.state = {
       tabList: [],
-      currentFile: "untitled",
+      currentFile: "",
       currentContent: "",
-      isNewFile: false,
       isMenuItemOpen: false,
-      errorMessage: "Nothing to show here.Start by clicking on NewFile"
+      errorMessage: "Nothing to show here.Start by clicking on NewFile",
     };
     SocketHandler(this);
     var context = this;
-    $(document).ready(function(){
-      console.log($('Drawer'));
-      $(document).on('keyup',function(e){
-        if(e.key === 'Escape')
-         context.setState({ isMenuItemOpen: false });
+    $(document).ready(function () {
+      $(document).on("keyup", function (e) {
+        if (e.key === "Escape") context.setState({ isMenuItemOpen: false });
       });
-    $(document).click(function(event) { 
-      console.log(event.target,'clicked');
-      if(!$(event.target).closest('Drawer').length && !$(event.target).closest('.fileList').length) {
-            console.log('closing menu');
-            context.setState({ isMenuItemOpen: false });
-          }
-        }); 
+      $(document).click(function (event) {
+        console.log(event.target, "clicked");
+        if (
+          !$(event.target).closest("Drawer").length &&
+          !$(event.target).closest(".fileList").length
+        ) {
+          console.log("closing menu");
+          context.setState({ isMenuItemOpen: false });
+        }
+      });
     });
-  } 
-
+  }
 
   update(e) {
     // console.log(e.target.value);
@@ -59,13 +51,12 @@ class App extends Component {
         // console.log('current content',this.state.currentContent);
       }
     });
-    
 
-      io.emit("savefile", {
-        fileName: this.state.currentFile,
-        fileContent: this.state.currentContent,
-      });
-      this.setState({ errorMessage: "File saved!" });
+    io.emit("savefile", {
+      fileName: this.state.currentFile,
+      fileContent: this.state.currentContent,
+    });
+    this.setState({ errorMessage: "File saved!" });
   }
   handleTabSwitch(value) {
     this.setState({ currentFile: value });
@@ -76,26 +67,26 @@ class App extends Component {
     if (fl.length === 0 || (fl.length !== 0 && fl[0].fileName !== "untitled")) {
       fl.unshift({
         fileName: "untitled",
-        fileContent: ""
+        fileContent: "",
       });
       console.log(fl);
       this.setState({
         tabList: fl,
         currentFile: "untitled",
-        currentContent:'',
+        currentContent: "",
         errorMessage: "Press Ctrl+s to save the file",
-        isNewFile:true,
+        isNewFile: true,
       });
     } else
       this.setState({
-        errorMessage: "Please save the unnamed file first to Continue."
+        errorMessage: "Please save the unnamed file first to Continue.",
       });
   }
   saveNewFile() {
     // console.log(e.target.keyCode,e.isMouseClick);
     var newName = this.refs.fileName.getValue();
     var content = this.state.currentContent;
-    console.log('content'+content);
+    console.log("content" + content);
     if (newName !== "") {
       console.log("sending new file event");
       var fl = this.state.tabList;
@@ -105,12 +96,12 @@ class App extends Component {
         tabList: fl,
         currentFile: newName + ".txt",
         errorMessage: "File created",
-        isNewFile: false
+        isNewFile: false,
       });
 
       io.emit("newfile", {
         fileName: newName + ".txt",
-        fileContent: content
+        fileContent: content,
       });
     } else {
       this.setState({ errorMessage: "Please enter a file name" });
@@ -123,60 +114,64 @@ class App extends Component {
   openMenuItem(e) {
     this.setState({
       isMenuItemOpen: !this.state.isMenuItemOpen,
-      currentFile: e.target.innerText
+      currentFile: e.target.innerText,
     });
   }
-  
+
   render() {
     var saveMode = (
-    <div>
-      <TextField hintText="Enter a file name" ref='fileName'/>
-      <RaisedButton class='createFile'
-        label="Create File"
-        onClick={this.saveNewFile.bind(this)}
-        secondary={true}
-        style={{ margin: "0px" }}
-      />
-    </div>
-  );
+      <div>
+        <TextField hintText="Enter a file name" ref="fileName" />
+        <RaisedButton
+          class="createFile"
+          label="Create File"
+          onClick={this.saveNewFile.bind(this)}
+          secondary={true}
+          style={{ margin: "0px" }}
+        />
+      </div>
+    );
 
-  var normalMode = (
-    <div>
-      {" "}
-      <RaisedButton
-        label="New File"
-        onClick={this.newFile.bind(this)}
-        secondary={true}
-        style={{ margin: "0px", size: "5px" }}
-      />
-    </div>
-  );
-  var tools = this.state.isNewFile ? saveMode : normalMode; 
-  return (
+    var normalMode = (
+      <div>
+        {" "}
+        <RaisedButton
+          label="New File"
+          onClick={this.newFile.bind(this)}
+          secondary={true}
+          style={{ margin: "0px", size: "5px" }}
+        />
+      </div>
+    );
+    var tools = this.state.isNewFile ? saveMode : normalMode;
+    return (
       <MuiThemeProvider>
         <div className="App">
           <header id="tools">
             <MenuItems
-                isMenuItemOpen={this.state.isMenuItemOpen}
-                fileList={this.state.tabList}
-                openMenuItem={this.openMenuItem.bind(this)}
-              />
-            
+              isMenuItemOpen={this.state.isMenuItemOpen}
+              fileList={this.state.tabList}
+              openMenuItem={this.openMenuItem.bind(this)}
+            />
+
             <Toolbar>
-               <RaisedButton className='fileList'
-                  label="File List"
-                  onClick={this.handleMenuToggle.bind(this)}
-                />
-                {tools}
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                onClick={handleDrawerOpen}
+                edge="start"
+                className={clsx(classes.menuButton, open && classes.hide)}
+              >
+              {tools}
             </Toolbar>
           </header>
           <div id="errorMessage">{this.state.errorMessage}</div>
-            <TabsEditor
-              update={this.update.bind(this)}
-              currentFile={this.state.currentFile}
-              allTabs={this.state.tabList}
-              handleTabSwitch={this.handleTabSwitch.bind(this)}
-            />
+          <TabsEditor
+            update={this.update.bind(this)}
+            currentFile={this.state.currentFile}
+            allTabs={this.state.tabList}
+            handleTabSwitch={this.handleTabSwitch.bind(this)}
+          />
         </div>
       </MuiThemeProvider>
     );
